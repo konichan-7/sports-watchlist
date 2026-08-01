@@ -15,13 +15,13 @@
 
 | 资源 | 地址 |
 |---|---|
-| 管理页面 | `https://konichan-7.github.io/sports-watchlist/` |
-| 日历订阅 | `https://konichan-7.github.io/sports-watchlist/calendar.ics` |
+| 管理页面 | `https://jiaxuanyang.com/sports-watchlist/` |
+| 日历订阅 | `https://jiaxuanyang.com/sports-watchlist/calendar.ics` |
 
 ### 1. 订阅到 Apple 日历（一次性）
 
 1. 打开 **日历** App → 菜单栏 **文件 → 新建日历订阅**
-2. 粘贴：`https://konichan-7.github.io/sports-watchlist/calendar.ics`
+2. 粘贴：`https://jiaxuanyang.com/sports-watchlist/calendar.ics`
 3. 勾选 **「提醒」**（不要勾选"忽略提醒"）
 4. 点 **订阅**
 
