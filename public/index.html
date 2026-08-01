@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pit Wall · 赛事追踪</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg-raise: #12151a;
+    --bg-card: #171a20;
+    --line: #262b33;
+    --text: #f2f0ea;
+    --text-dim: #9aa3ad;
+    --text-faint: #5c6670;
+    --f1: #e10600;
+    --f1-glow: rgba(225, 6, 0, .55);
+    --cs2: #ffb000;
+    --cs2-glow: rgba(255, 176, 0, .5);
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --body: 'Outfit', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { min-height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* atmosphere: grid + vignette */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 20%, transparent 75%);
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse 120% 90% at 50% -10%, rgba(225,6,0,.06), transparent 55%);
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 28px 96px; }
+
+  /* ── header ─────────────────────────────── */
+  .checker {
+    height: 14px;
+    margin: 26px 0 22px;
+    background: repeating-conic-gradient(var(--text) 0% 25%, transparent 0% 50%) 0 0 / 14px 14px;
+    opacity: .9;
+    box-shadow: 0 0 24px rgba(242,240,234,.15);
+  }
+
+  .masthead { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 42px; }
+
+  .logo {
+    font-family: var(--display);
+    font-size: clamp(44px, 9vw, 76px);
+    line-height: .85;
+    letter-spacing: .02em;
+  }
+  .logo .pit { color: var(--text); }
+  .logo .wall { color: var(--f1); text-shadow: 0 0 26px var(--f1-glow); }
+
+  .tagline {
+    margin-top: 10px;
+    color: var(--text-dim);
+    font-size: 14px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .tagline b { color: var(--text); font-weight: 500; }
+
+  .now {
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-faint);
+    line-height: 1.7;
+    letter-spacing: .08em;
+  }
+  .now .big {
+    font-size: 17px;
+    color: var(--text);
+    font-weight: 500;
+    display: block;
+  }
+  .now .live-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--f1); margin-right: 6px; animation: blink 1.6s infinite;
+  }
+  @keyframes blink { 0%,100% {opacity:1} 50% {opacity:.2} }
+
+  /* ── controls row ───────────────────────── */
+  .controls {
+    display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; margin-bottom: 46px;
+  }
+
+  .panel {
+    background: linear-gradient(180deg, var(--bg-raise), var(--bg-card));
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px 20px;
+  }
+  .panel h2 {
+    font-family: var(--display);
+    font-size: 19px; letter-spacing: .06em; font-weight: 400;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel h2 .glyph { color: var(--f1); }
+
+  .sub-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .sub-form label { font-family: var(--mono); font-size: 11px; color: var(--text-faint); letter-spacing: .1em; }
+  .sub-code {
+    flex: 1 1 260px;
+    font-family: var(--mono); font-size: 12.5px;
+    background: #0d1014; border: 1px solid var(--line); border-radius: 8px;
+    color: var(--cs2); padding: 10px 12px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .copy-btn, .btn {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
+    background: var(--text); color: #0a0c0f; border: none; border-radius: 8px;
+    padding: 10px 16px; cursor: pointer; font-weight: 600;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .copy-btn:hover, .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(242,240,234,.22); }
+  .copy-btn:active, .btn:active { transform: translateY(0); }
+  .copy-btn.copied { background: var(--cs2); }
+
+  /* add tracker form */
+  .add-form { display: flex; gap: 10px; align-items: center; }
+  .add-form select, .add-form input {
+    font-family: var(--mono); font-size: 13px;
+    background: #0d1014; border: 1px solid var(--line); border-radius: 8px;
+    color: var(--text); padding: 10px 12px; outline: none;
+  }
+  .add-form select:focus, .add-form input:focus { border-color: var(--f1); box-shadow: 0 0 0 3px rgba(225,6,0,.15); }
+  .add-form input[type="text"] { flex: 1 1 140px; min-width: 120px; }
+  .add-form select { flex: 0 0 92px; }
+  .team-input-wrap { flex: 1 1 200px; display: flex; }
+  .hint { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 8px; letter-spacing: .06em; }
+
+  /* trackers chips */
+  .trackers { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12px;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 10px 6px 13px; color: var(--text-dim);
+    background: #0d1014;
+  }
+  .chip[data-type="f1"] { border-color: rgba(225,6,0,.4); color: #ff8a86; }
+  .chip[data-type="cs2"] { border-color: rgba(255,176,0,.4); color: #ffcf6b; }
+  .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .chip .rm {
+    border: none; background: transparent; color: var(--text-faint); cursor: pointer;
+    font-size: 14px; line-height: 1; padding: 2px; border-radius: 4px;
+  }
+  .chip .rm:hover { color: var(--f1); }
+
+  /* ── event list ─────────────────────────── */
+  .events-title {
+    font-family: var(--display); font-size: 22px; letter-spacing: .05em; font-weight: 400;
+    color: var(--text); margin-bottom: 6px;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .events-title .count { font-family: var(--mono); font-size: 13px; color: var(--text-faint); }
+  .legend { display: flex; gap: 18px; margin-bottom: 18px; font-family: var(--mono); font-size: 11px; color: var(--text-faint); letter-spacing: .06em; }
+  .legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .legend .lg-f1::before { background: var(--f1); }
+  .legend .lg-cs2::before { background: var(--cs2); }
+  .legend .lg-cal::before { background: var(--text); }
+
+  .day-group { margin-bottom: 22px; }
+  .day-head {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+  }
+  .day-date { font-family: var(--mono); font-size: 13px; color: var(--text); font-weight: 500; letter-spacing: .08em; }
+  .day-rule { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+
+  .event {
+    display: grid; grid-template-columns: 92px 1fr auto; gap: 16px; align-items: center;
+    background: linear-gradient(180deg, var(--bg-raise), var(--bg-card));
+    border: 1px solid var(--line); border-left-width: 3px; border-radius: 10px;
+    padding: 13px 18px; margin-bottom: 9px;
+    animation: rise .5s ease both;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .event:hover { transform: translateX(4px); }
+  .event[data-kind="f1"] { border-left-color: var(--f1); }
+  .event[data-kind="cs2"] { border-left-color: var(--cs2); }
+  .event.past { opacity: .42; filter: grayscale(.5); }
+  .event.past .time { text-decoration: line-through; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .time {
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 500; color: var(--text);
+    letter-spacing: .02em;
+  }
+  .time .day { display: block; font-size: 10.5px; color: var(--text-faint); font-weight: 400; letter-spacing: .1em; margin-top: 2px; }
+
+  .ev-main { min-width: 0; }
+  .ev-title {
+    font-size: 16.5px; font-weight: 500; color: var(--text);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .ev-sub {
+    font-family: var(--mono); font-size: 11.5px; color: var(--text-dim);
+    margin-top: 3px; letter-spacing: .05em;
+  }
+
+  .badge {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+    padding: 3px 8px; border-radius: 5px; text-transform: uppercase;
+  }
+  .badge[data-kind="f1"] { background: rgba(225,6,0,.14); color: #ff8a86; border: 1px solid rgba(225,6,0,.35); }
+  .badge[data-kind="cs2"] { background: rgba(255,176,0,.12); color: #ffcf6b; border: 1px solid rgba(255,176,0,.35); }
+  .badge.cal { background: rgba(242,240,234,.1); color: var(--text); border: 1px solid var(--line); }
+  .badge.session { background: transparent; color: var(--text-faint); border: 1px solid var(--line); font-weight: 500; }
+
+  .ev-right { text-align: right; }
+  .countdown {
+    font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--text);
+    letter-spacing: .04em;
+  }
+  .countdown.soon { color: var(--f1); text-shadow: 0 0 18px var(--f1-glow); }
+  .countdown.live { color: var(--cs2); text-shadow: 0 0 18px var(--cs2-glow); animation: blink 1.4s infinite; }
+  .countdown-label { font-family: var(--mono); font-size: 10px; color: var(--text-faint); letter-spacing: .12em; margin-top: 2px; }
+
+  .empty {
+    text-align: center; padding: 60px 20px; color: var(--text-faint);
+    font-family: var(--mono); font-size: 13px; letter-spacing: .1em;
+    border: 1px dashed var(--line); border-radius: 12px;
+  }
+
+  footer {
+    margin-top: 40px; text-align: center;
+    font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); letter-spacing: .1em; line-height: 1.8;
+  }
+  footer a { color: var(--text-dim); }
+
+  @media (max-width: 720px) {
+    .masthead { flex-direction: column; align-items: flex-start; }
+    .now { text-align: left; }
+    .controls { grid-template-columns: 1fr; }
+    .event { grid-template-columns: 74px 1fr; }
+    .ev-right { grid-column: 2; text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="checker"></div>
+
+  <header class="masthead">
+    <div>
+      <h1 class="logo"><span class="pit">PIT</span> <span class="wall">WALL</span></h1>
+      <div class="tagline">F1 & CS2 赛程雷达 · <b id="tracker-count">—</b></div>
+    </div>
+    <div class="now">
+      <span class="big"><span class="live-dot"></span><span id="clock">--:--:--</span></span>
+      <span id="date-line">—</span>
+    </div>
+  </header>
+
+  <section class="controls">
+    <div class="panel">
+      <h2><span class="glyph">▌</span> 日历订阅</h2>
+      <div class="sub-form">
+        <label>URL</label>
+        <div class="sub-code" id="sub-url">http://localhost:8787/calendar.ics</div>
+        <button class="copy-btn" id="copy-btn">复制</button>
+      </div>
+      <div class="hint">Apple 日历 → 文件 → 新建日历订阅 → 粘贴地址 → 勾选「提醒」</div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="glyph">▌</span> 跟踪内容</h2>
+      <div class="add-form">
+        <select id="add-type">
+          <option value="f1">F1</option>
+          <option value="cs2">CS2</option>
+        </select>
+        <div class="team-input-wrap">
+          <input type="text" id="add-team" placeholder="队伍名，如 Spirit" style="display:none">
+        </div>
+        <button class="btn" id="add-btn">＋ 添加</button>
+      </div>
+      <div class="trackers" id="trackers"></div>
+    </div>
+  </section>
+
+  <div class="events-title">
+    即将开始的比赛 <span class="count" id="event-count"></span>
+  </div>
+  <div class="legend">
+    <span class="lg-f1">F1</span>
+    <span class="lg-cs2">CS2</span>
+    <span class="lg-cal">进日历</span>
+  </div>
+
+  <section id="events"></section>
+  <div class="empty" id="empty" style="display:none">暂无赛程 · 添加跟踪内容后自动刷新</div>
+
+  <footer>
+    <a href="http://localhost:8787/calendar.ics">calendar.ics</a> · 数据来源：Jolpica (F1) / Liquipedia (CS2)<br>
+    Pit Wall · 本地运行，赛程自动同步到你的 Apple 日历
+  </footer>
+
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const SUB_URL = location.origin + '/calendar.ics';
+const WEEKDAYS = ['周日','周一','周二','周三','周四','周五','周六'];
+
+let events = [];
+let trackers = [];
+let clockTimer, countdownTimer;
+
+// ── clock ────────────────────────────────
+function tickClock() {
+  const now = new Date();
+  $('#clock').textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+  $('#date-line').textContent = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }) + ' ' + WEEKDAYS[now.getDay()];
+}
+clockTimer = setInterval(tickClock, 1000);
+tickClock();
+
+// ── api ─────────────────────────────────
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function api(path, opts) {
+  const res = await fetch(path, opts);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function loadEvents() {
+  try {
+    const data = await api('/api/events');
+    events = data.events;
+    renderEvents();
+  } catch (e) {
+    $('#events').innerHTML = `<div class="empty">加载失败：${e.message}</div>`;
+  }
+}
+
+async function loadTrackers() {
+  const data = await api('/api/trackers');
+  trackers = data.trackers;
+  $('#tracker-count').textContent = trackers.length ? `${trackers.length} 个跟踪目标` : '暂无跟踪';
+  renderTrackers();
+  loadEvents();
+}
+
+function renderTrackers() {
+  const box = $('#trackers');
+  if (!trackers.length) {
+    box.innerHTML = '<span class="hint" style="margin:0">还没有跟踪任何内容</span>';
+    return;
+  }
+  box.innerHTML = trackers.map((t) => `
+    <span class="chip" data-type="${t.type}">
+      <span class="dot"></span>${escapeHtml(t.label)}
+      <button class="rm" data-id="${t.id}" title="删除">×</button>
+    </span>
+  `).join('');
+  box.querySelectorAll('.rm').forEach((btn) => {
+    btn.onclick = async () => {
+      await api('/api/trackers/' + encodeURIComponent(btn.dataset.id), { method: 'DELETE' });
+      await loadTrackers();
+    };
+  });
+}
+
+// ── event rendering ──────────────────────
+function fmtDay(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtTime(d) { return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }); }
+function countdownText(ms) {
+  if (ms <= 0) return '开始';
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+  return d > 0 ? `${d}天 ${h}时` : h > 0 ? `${h}时 ${m}分` : `${m}分 ${s % 60}秒`;
+}
+
+function renderEvents() {
+  const now = new Date();
+  const today = fmtDay(now);
+  const upcoming = events.filter((e) => e.end > Date.now());
+  $('#event-count').textContent = `${upcoming.length} 场`;
+
+  if (!upcoming.length) {
+    $('#empty').style.display = 'block';
+    $('#events').innerHTML = '';
+    return;
+  }
+  $('#empty').style.display = 'none';
+
+  // group future events by calendar day
+  const groups = new Map();
+  for (const e of upcoming) {
+    const d = fmtDay(new Date(e.start));
+    if (!groups.has(d)) groups.set(d, []);
+    groups.get(d).push(e);
+  }
+  const sortedDays = [...groups.keys()].sort();
+
+  $('#events').innerHTML = sortedDays.map((day, gi) => {
+    const items = groups.get(day).map((e, i) => renderEventCard(e, gi * 8 + i)).join('');
+    const isToday = day === today;
+    const label = isToday ? '今天' : fmtDayLabel(day);
+    return `<div class="day-group"><div class="day-head"><span class="day-date">${label}</span><span class="day-rule"></span></div>${items}</div>`;
+  }).join('');
+
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownTimer = setInterval(refreshCountdowns, 1000);
+}
+
+function fmtDayLabel(day) {
+  const d = new Date(day + 'T00:00:00');
+  const now = new Date();
+  const diff = Math.round((d - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+  if (diff === 1) return `明天 · ${day} ${WEEKDAYS[d.getDay()]}`;
+  if (diff === 2) return `后天 · ${day} ${WEEKDAYS[d.getDay()]}`;
+  return `${day} ${WEEKDAYS[d.getDay()]}`;
+}
+
+function renderEventCard(e, idx) {
+  const d = new Date(e.start);
+  const past = e.end < Date.now();
+  const kind = e.kind;
+  // F1: title = 站名 · 场次, sub = 赛道 · 国家; CS2: title = 对阵, sub = 赛事
+  let title, sub;
+  if (kind === 'f1') {
+    title = `${e.title} · ${e.subtitle}`;
+    sub = [e.circuit, e.country].filter(Boolean).join(' · ') || e.session;
+  } else {
+    title = e.title;
+    sub = e.subtitle;
+  }
+  return `
+    <div class="event ${past ? 'past' : ''}" data-kind="${kind}" style="animation-delay:${idx * 30}ms">
+      <div class="time">${fmtTime(d)}<span class="day">${kind === 'f1' ? '第 ' + e.round + ' 站' : 'CS2'}</span></div>
+      <div class="ev-main">
+        <div class="ev-title">
+          <span class="badge" data-kind="${kind}">${kind.toUpperCase()}</span>
+          ${escapeHtml(title)}
+        </div>
+        <div class="ev-sub">${escapeHtml(sub)}</div>
+      </div>
+      <div class="ev-right">
+        <div class="countdown" data-start="${e.start}" data-end="${e.end}" style="${kind === 'f1' ? 'color:var(--f1)' : 'color:var(--cs2)'}">—</div>
+        <div class="countdown-label">${e.inCalendar ? '赛前1小时提醒' : '不进日历'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function refreshCountdowns() {
+  const now = Date.now();
+  document.querySelectorAll('.countdown').forEach((el) => {
+    const start = Number(el.dataset.start);
+    const end = Number(el.dataset.end);
+    el.classList.remove('soon', 'live');
+    if (now >= start && now <= end) { el.textContent = 'LIVE'; el.classList.add('live'); return; }
+    if (now < start) {
+      const ms = start - now;
+      el.textContent = countdownText(ms);
+      if (ms < 60 * 60 * 1000) el.classList.add('soon');
+    } else { el.textContent = '已结束'; }
+  });
+}
+
+// ── subscription url ─────────────────────
+$('#sub-url').textContent = SUB_URL;
+$('#copy-btn').onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(SUB_URL);
+    const btn = $('#copy-btn');
+    btn.textContent = '已复制 ✓'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 1600);
+  } catch (e) {
+    // fallback for non-secure context
+    window.prompt('复制订阅地址', SUB_URL);
+  }
+};
+
+// ── add tracker ─────────────────────────
+const teamInput = $('#add-team');
+const typeSel = $('#add-type');
+function syncTypeInput() {
+  teamInput.style.display = typeSel.value === 'cs2' ? 'block' : 'none';
+  teamInput.placeholder = '队伍名，如 Spirit';
+}
+typeSel.onchange = syncTypeInput;
+syncTypeInput();
+
+$('#add-btn').onclick = async () => {
+  const type = typeSel.value;
+  const body = { type, label: undefined };
+  if (type === 'cs2') {
+    const team = teamInput.value.trim();
+    if (!team) { teamInput.focus(); return; }
+    body.team = team;
+    body.label = `CS2 · ${team}`;
+  }
+  try {
+    await api('/api/trackers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    teamInput.value = '';
+    await loadTrackers();
+  } catch (e) {
+    alert('添加失败：' + e.message);
+  }
+};
+teamInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') $('#add-btn').click(); });
+
+// ── init ────────────────────────────────
+loadTrackers();
+</script>
+</body>
+</html>

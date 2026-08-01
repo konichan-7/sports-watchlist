@@ -1,0 +1,14 @@
+{
+  "name": "sports-watchlist",
+  "version": "1.0.0",
+  "description": "Local watchlist for F1 and CS2 esports schedules, synced to Apple Calendar via iCal subscription",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT"
+}

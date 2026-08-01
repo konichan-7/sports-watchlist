@@ -1,0 +1,16 @@
+{
+  "f1Year": 2026,
+  "trackers": [
+    {
+      "id": "f1",
+      "type": "f1",
+      "label": "F1 全赛站"
+    },
+    {
+      "id": "cs2-spirit",
+      "type": "cs2",
+      "team": "Spirit",
+      "label": "CS2 · Spirit (donk)"
+    }
+  ]
+}

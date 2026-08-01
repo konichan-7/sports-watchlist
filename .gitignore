@@ -1,0 +1,12 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Local data / runtime
+config.json.tmp
+
+# OS
+.DS_Store
+
+# Visual companion artifacts
+.superpowers/
