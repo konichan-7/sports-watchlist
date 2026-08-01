@@ -2,7 +2,7 @@
 
 自动收集 **F1 赛程** 和 **CS2 战队比赛**（如 Team Spirit / donk），通过 **iCal 订阅** 同步到你的 Apple 日历，**赛前 1 小时自动提醒**。
 
-- **自动部署**：GitHub Actions 每小时拉取赛程 → 生成静态文件 → 托管在 GitHub Pages，本机无需开机
+- **自动部署**：GitHub Actions 每天拉取赛程 → 生成静态文件 → 托管在 GitHub Pages，本机无需开机
 - **零依赖**（只用 Node.js 内置模块，无 `npm install`）
 - **数据源免费**：F1 来自 [Jolpica API](https://api.jolpi.ca/ergast/f1/2026.json)，CS2 来自 [Liquipedia](https://liquipedia.net/counterstrike/Liquipedia:Matches)
 - 支持增删跟踪的 CS2 队伍（编辑 `config.json` 即可）
@@ -46,7 +46,7 @@
 
 ### 3. 更新频率
 
-- 赛程数据每小时重新拉取（GitHub Actions cron）
+- 赛程数据每天上午 10:17（北京时间）重新拉取（GitHub Actions cron）
 - 推送 `config.json` 修改也会立即触发重新生成
 - Apple 日历按自身设置定期刷新订阅源（可在日历的订阅信息中调整）
 
@@ -88,7 +88,7 @@ npm start
 
 本项目已配置好自动部署，正常情况下无需手动操作。如需了解：
 
-- **工作流**：`.github/workflows/update-schedule.yml`（每小时 + push 触发）
+- **工作流**：`.github/workflows/update-schedule.yml`（每天 + push 触发）
 - **构建脚本**：`scripts/build-static.js` 生成 `dist/`（calendar.ics、events.json、index.html）
 - **发布源**：仓库 Settings → Pages → **GitHub Actions**
 
@@ -137,7 +137,7 @@ sports/
 - 手动刷新：日历 → 订阅的日历右键 →「刷新」
 
 ### CS2 比赛时间可能偏晚
-CS2 赛程通常提前几小时到几天才确定，且临近会有推迟。Actions 每小时拉取，日历会跟随更新。
+CS2 赛程通常提前几小时到几天才确定，且临近会有推迟。Actions 每天拉取，日历会跟随更新。
 
 ### 想换数据源 / 新增运动
 当前已内置 F1、CS2。可参考 `lib/f1.js`、`lib/cs2.js` 的结构，在 `lib/events.js` 的 `buildEvents()` 中接入新的抓取器。
