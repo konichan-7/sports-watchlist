@@ -29,13 +29,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Build static site
         run: node scripts/build-static.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true   # create the Pages site on first run
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
