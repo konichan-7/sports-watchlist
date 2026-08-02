@@ -32,6 +32,8 @@ jobs:
           node-version: 22
 
       - name: Build static site
+        env:
+          PANDASCORE_TOKEN: ${{ secrets.PANDASCORE_TOKEN }}
         run: node scripts/build-static.js
 
       - name: Configure Pages
