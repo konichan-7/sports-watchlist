@@ -5,7 +5,7 @@
 ## 🗓 订阅 Apple 日历
 
 1. **日历** App → **文件 → 新建日历订阅**
-2. 粘贴：`https://jiaxuanyang.com/sports-watchlist/calendar.ics`
+2. 粘贴：`https://sports.jiaxuanyang.com/calendar.ics`
 3. 勾选「提醒」→ **订阅**
 
 iPhone 连同一 iCloud 账号即可同步。
@@ -34,7 +34,7 @@ iPhone 连同一 iCloud 账号即可同步。
 
 ## 📊 管理页面
 
-`https://jiaxuanyang.com/sports-watchlist/` — 按日期查看赛程与倒计时。
+`https://sports.jiaxuanyang.com/` — 按日期查看赛程与倒计时。
 
 ## ❓ 常见问题
 
