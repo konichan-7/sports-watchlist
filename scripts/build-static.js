@@ -18,11 +18,34 @@ const ics = require('../lib/ics');
 const DIST_DIR = path.join(__dirname, '..', 'dist');
 const PUBLIC_INDEX = path.join(__dirname, '..', 'public', 'index.html');
 
+async function loadPreviousEvents(url) {
+  if (!url) return [];
+
+  const res = await fetch(url, {
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': 'sports-watchlist/1.0',
+    },
+  });
+  if (!res.ok) throw new Error(`Previous events API ${res.status}: ${url}`);
+
+  const payload = await res.json();
+  if (!Array.isArray(payload?.events)) {
+    throw new Error(`Previous events payload is invalid: ${url}`);
+  }
+  return payload.events;
+}
+
 async function main() {
   fs.mkdirSync(DIST_DIR, { recursive: true });
 
+  const previousEvents = await loadPreviousEvents(process.env.PREVIOUS_EVENTS_URL);
+  if (previousEvents.length > 0) {
+    console.log(`Previous events    ${previousEvents.length} loaded`);
+  }
+
   console.log('Fetching schedules...');
-  const data = await eventsLib.buildStaticData();
+  const data = await eventsLib.buildStaticData(previousEvents);
 
   // calendar.ics
   const cal = ics.buildCalendar(data.calendarEvents, 'Sports Watchlist');

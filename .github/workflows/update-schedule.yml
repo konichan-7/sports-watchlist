@@ -34,6 +34,7 @@ jobs:
       - name: Build static site
         env:
           PANDASCORE_TOKEN: ${{ secrets.PANDASCORE_TOKEN }}
+          PREVIOUS_EVENTS_URL: https://jiaxuanyang.com/sports-watchlist/events.json
         run: node scripts/build-static.js
 
       - name: Configure Pages
